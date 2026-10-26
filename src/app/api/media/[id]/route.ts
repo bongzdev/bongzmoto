@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getCurrentAuth } from '@/lib/auth/session';
 import { repo } from '@/lib/db/repository';
-import fs from 'fs';
-import path from 'path';
+import { readAttachment } from '@/lib/storage';
 
 export async function GET(
   req: NextRequest,
@@ -22,13 +21,12 @@ export async function GET(
       return NextResponse.json({ error: 'Access denied.' }, { status: 403 });
     }
 
-    const fullPath = path.resolve(process.cwd(), 'storage', 'attachments', attachment.file_path);
-    if (!fs.existsSync(fullPath)) {
+    const fileBuffer = await readAttachment(attachment.file_path);
+    if (!fileBuffer) {
       return NextResponse.json({ error: 'File content missing on server.' }, { status: 404 });
     }
 
-    const fileBuffer = fs.readFileSync(fullPath);
-    return new NextResponse(fileBuffer, {
+    return new NextResponse(new Uint8Array(fileBuffer), {
       headers: {
         'Content-Type': attachment.mime_type,
         'Content-Length': attachment.file_size.toString(),

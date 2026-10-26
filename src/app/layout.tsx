@@ -29,6 +29,7 @@ export default async function RootLayout({
             role: auth.user.role,
           }}
           workshopName={auth.workshop.name}
+          workshopLogo={auth.workshop.logo_url}
         />
         <main className="flex-1 max-w-4xl w-full mx-auto p-4 sm:p-6 pb-24">
           {children}

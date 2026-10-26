@@ -53,6 +53,7 @@ export class BongzMotoRepository {
       tax_enabled?: boolean;
       tax_rate_percent?: number;
       vat_number?: string | null;
+      logo_url?: string | null;
     }
   ): Promise<Workshop> {
     const current = await this.getWorkshop(workshopId);
@@ -70,6 +71,7 @@ export class BongzMotoRepository {
               tax_enabled = COALESCE(?, tax_enabled),
               tax_rate_percent = COALESCE(?, tax_rate_percent),
               vat_number = ?,
+              logo_url = ?,
               updated_at = datetime('now')
             WHERE id = ?`,
       args: [
@@ -80,6 +82,7 @@ export class BongzMotoRepository {
         data.tax_enabled !== undefined ? (data.tax_enabled ? 1 : 0) : null,
         data.tax_rate_percent ?? null,
         data.vat_number !== undefined ? data.vat_number : current.vat_number ?? null,
+        data.logo_url !== undefined ? data.logo_url : current.logo_url ?? null,
         workshopId,
       ],
     });
@@ -1267,6 +1270,7 @@ export class BongzMotoRepository {
       phone_display: string;
       address: string;
       vat_number?: string | null;
+      logo_url?: string | null;
     };
     customer: {
       full_name: string;
@@ -1313,6 +1317,7 @@ export class BongzMotoRepository {
         phone_display: workshop.phone_display,
         address: workshop.address,
         vat_number: workshop.tax_enabled ? workshop.vat_number : null,
+        logo_url: workshop.logo_url || null,
       },
       customer: {
         full_name: job.customer_name || 'Customer',

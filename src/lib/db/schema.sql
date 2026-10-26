@@ -18,6 +18,7 @@ CREATE TABLE IF NOT EXISTS workshops (
   receipt_prefix TEXT DEFAULT 'REC-',
   next_job_number INTEGER DEFAULT 1,
   next_receipt_number INTEGER DEFAULT 1,
+  logo_url TEXT,
   created_at TEXT DEFAULT (datetime('now')),
   updated_at TEXT DEFAULT (datetime('now'))
 );

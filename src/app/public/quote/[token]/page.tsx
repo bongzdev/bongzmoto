@@ -57,11 +57,25 @@ export default async function PublicQuotePage({
           {/* Header */}
           <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 pb-6 border-b border-zinc-200">
             <div>
-              <div className="flex items-center gap-2 mb-1">
-                <div className="h-8 w-8 rounded-lg bg-zinc-900 text-amber-500 flex items-center justify-center font-bold">
-                  <Wrench className="h-4 w-4" />
+              <div className="flex items-center gap-3 mb-2">
+                {workshop.logo_url ? (
+                  /* eslint-disable-next-line @next/next/no-img-element */
+                  <img
+                    src={workshop.logo_url}
+                    alt={workshop.name}
+                    className="h-12 w-auto max-w-[160px] max-h-12 object-contain rounded-lg border border-zinc-200/80 p-0.5 bg-white shadow-xs"
+                  />
+                ) : (
+                  <div className="h-9 w-9 rounded-xl bg-zinc-900 text-amber-500 flex items-center justify-center font-bold shadow-xs">
+                    <Wrench className="h-5 w-5" />
+                  </div>
+                )}
+                <div>
+                  <h1 className="text-xl font-black text-zinc-900 tracking-tight leading-tight">{workshop.name}</h1>
+                  <span className="text-[10px] uppercase font-bold tracking-wider text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200/60">
+                    Verified Auto Workshop
+                  </span>
                 </div>
-                <h1 className="text-xl font-black text-zinc-900 tracking-tight">{workshop.name}</h1>
               </div>
 
               <div className="text-xs text-zinc-600 space-y-0.5 mt-2">

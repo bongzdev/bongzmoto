@@ -3,7 +3,7 @@ import { getCurrentAuth } from '@/lib/auth/session';
 import { repo } from '@/lib/db/repository';
 import { transcriptionService } from '@/lib/transcription/service';
 import { AttachmentCategory } from '@/lib/types';
-import fs from 'fs';
+import { saveAttachment } from '@/lib/storage';
 import path from 'path';
 import { randomUUID } from 'crypto';
 
@@ -82,22 +82,16 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Write file to local private storage
-    const storageDir = path.resolve(process.cwd(), 'storage', 'attachments', auth.workshop.id);
-    if (!fs.existsSync(storageDir)) {
-      fs.mkdirSync(storageDir, { recursive: true });
-    }
-
+    // Write file to private storage (Supabase Storage in production, local disk in dev)
     const fileExt = path.extname(file.name) || (mimeType.startsWith('audio/') ? '.webm' : '.bin');
     const safeFilename = `${Date.now()}-${randomUUID()}${fileExt}`;
-    const destinationPath = path.join(storageDir, safeFilename);
+    const relativePath = path.posix.join(auth.workshop.id, safeFilename);
 
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
-    fs.writeFileSync(destinationPath, buffer);
+    await saveAttachment(relativePath, buffer, mimeType);
 
     // Save attachment in database
-    const relativePath = path.posix.join(auth.workshop.id, safeFilename);
     const attachment = await repo.addJobAttachment(
       auth.workshop.id,
       jobId,

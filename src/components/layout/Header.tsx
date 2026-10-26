@@ -11,9 +11,10 @@ interface HeaderProps {
     role: string;
   };
   workshopName?: string;
+  workshopLogo?: string | null;
 }
 
-export function Header({ currentUser, workshopName = 'Bongz Auto' }: HeaderProps) {
+export function Header({ currentUser, workshopName = 'Bongz Auto', workshopLogo }: HeaderProps) {
   const [isOffline, setIsOffline] = useState(false);
   const [roleMenuOpen, setRoleMenuOpen] = useState(false);
   const [switching, setSwitching] = useState(false);
@@ -65,10 +66,19 @@ export function Header({ currentUser, workshopName = 'Bongz Auto' }: HeaderProps
 
       <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
         {/* Brand */}
-        <Link href="/" className="flex items-center gap-2 focus:outline-none">
-          <div className="h-9 w-9 rounded-lg bg-amber-500 text-zinc-950 flex items-center justify-center font-black shadow-inner">
-            <Wrench className="h-5 w-5" />
-          </div>
+        <Link href="/" className="flex items-center gap-2.5 focus:outline-none">
+          {workshopLogo ? (
+            /* eslint-disable-next-line @next/next/no-img-element */
+            <img
+              src={workshopLogo}
+              alt={workshopName}
+              className="h-9 w-9 rounded-lg object-contain bg-zinc-800 p-0.5 border border-zinc-700 shadow-inner"
+            />
+          ) : (
+            <div className="h-9 w-9 rounded-lg bg-amber-500 text-zinc-950 flex items-center justify-center font-black shadow-inner">
+              <Wrench className="h-5 w-5" />
+            </div>
+          )}
           <div>
             <div className="flex items-center gap-1.5">
               <span className="font-bold text-base tracking-tight text-white">BongzMoto</span>
@@ -76,7 +86,7 @@ export function Header({ currentUser, workshopName = 'Bongz Auto' }: HeaderProps
                 v1.0
               </span>
             </div>
-            <p className="text-[11px] text-zinc-400 truncate max-w-[160px] leading-tight">
+            <p className="text-[11px] text-zinc-400 truncate max-w-[170px] leading-tight">
               {workshopName}
             </p>
           </div>

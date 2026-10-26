@@ -14,6 +14,10 @@ import {
   Phone,
   MapPin,
   Percent,
+  Upload,
+  Image as ImageIcon,
+  Trash2,
+  Sparkles,
 } from 'lucide-react';
 
 export default function SettingsPage() {
@@ -22,6 +26,7 @@ export default function SettingsPage() {
   const [isOwner, setIsOwner] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
@@ -32,6 +37,7 @@ export default function SettingsPage() {
   const [taxEnabled, setTaxEnabled] = useState(false);
   const [taxRate, setTaxRate] = useState(15.0);
   const [vatNumber, setVatNumber] = useState('');
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
 
   useEffect(() => {
     fetch('/api/workshop/settings')
@@ -45,6 +51,7 @@ export default function SettingsPage() {
           setTaxEnabled(Boolean(data.workshop.tax_enabled));
           setTaxRate(data.workshop.tax_rate_percent || 15.0);
           setVatNumber(data.workshop.vat_number || '');
+          setLogoUrl(data.workshop.logo_url || null);
         }
         if (data.staff) setStaff(data.staff);
         setIsOwner(Boolean(data.isOwner));
@@ -52,6 +59,67 @@ export default function SettingsPage() {
       .catch((err) => setErrorMsg(err.message))
       .finally(() => setLoading(false));
   }, []);
+
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !isOwner) return;
+
+    setUploadingLogo(true);
+    setSuccessMsg(null);
+    setErrorMsg(null);
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const res = await fetch('/api/workshop/logo', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || 'Failed to upload workshop logo');
+      }
+
+      setLogoUrl(data.logo_url);
+      setWorkshop(data.workshop);
+      setSuccessMsg('Workshop logo uploaded successfully! It is now live on your quotes and receipts.');
+    } catch (err: any) {
+      setErrorMsg(err.message);
+    } finally {
+      setUploadingLogo(false);
+      // Reset input value so re-selecting same file triggers onChange
+      e.target.value = '';
+    }
+  };
+
+  const handleRemoveLogo = async () => {
+    if (!isOwner || !confirm('Are you sure you want to remove your workshop logo?')) return;
+
+    setUploadingLogo(true);
+    setSuccessMsg(null);
+    setErrorMsg(null);
+
+    try {
+      const res = await fetch('/api/workshop/logo', {
+        method: 'DELETE',
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || 'Failed to remove logo');
+      }
+
+      setLogoUrl(null);
+      setWorkshop(data.workshop);
+      setSuccessMsg('Workshop logo removed. System default badge will be used.');
+    } catch (err: any) {
+      setErrorMsg(err.message);
+    } finally {
+      setUploadingLogo(false);
+    }
+  };
 
   const handleSaveSettings = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -137,6 +205,98 @@ export default function SettingsPage() {
           </p>
         </div>
       )}
+
+      {/* Workshop Branding & Custom Logo Card */}
+      <div className="bg-white rounded-3xl p-5 border border-zinc-200 shadow-xs space-y-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="h-8 w-8 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center">
+              <Sparkles className="h-4 w-4" />
+            </div>
+            <div>
+              <h2 className="text-sm font-bold text-zinc-900">Workshop Brand & Custom Logo</h2>
+              <p className="text-[11px] text-zinc-500">
+                Personalize your customer quotes, receipts, and invoices with your shop logo
+              </p>
+            </div>
+          </div>
+          <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-zinc-100 text-zinc-600 border border-zinc-200">
+            White-Label
+          </span>
+        </div>
+
+        <div className="flex flex-col sm:flex-row sm:items-center gap-4 p-4 rounded-2xl bg-zinc-50 border border-zinc-200/80">
+          {/* Logo Preview */}
+          <div className="relative shrink-0 flex items-center justify-center h-20 w-20 sm:h-24 sm:w-24 rounded-2xl bg-white border-2 border-dashed border-zinc-300 overflow-hidden shadow-xs">
+            {logoUrl ? (
+              /* eslint-disable-next-line @next/next/no-img-element */
+              <img
+                src={logoUrl}
+                alt={name || 'Workshop Logo'}
+                className="h-full w-full object-contain p-1.5"
+              />
+            ) : (
+              <div className="flex flex-col items-center justify-center text-zinc-400 p-2 text-center">
+                <ImageIcon className="h-6 w-6 stroke-[1.5] mb-1" />
+                <span className="text-[9px] font-bold uppercase tracking-tight">No Logo</span>
+              </div>
+            )}
+            {uploadingLogo && (
+              <div className="absolute inset-0 bg-black/40 backdrop-blur-xs flex items-center justify-center">
+                <span className="h-5 w-5 border-2 border-amber-400 border-t-transparent rounded-full animate-spin" />
+              </div>
+            )}
+          </div>
+
+          {/* Action & Info */}
+          <div className="flex-1 space-y-2">
+            <div>
+              <p className="text-xs font-bold text-zinc-900">
+                {logoUrl ? 'Custom Workshop Logo Active' : 'Use Default BongzMoto Badge or Upload Custom Logo'}
+              </p>
+              <p className="text-[11px] text-zinc-500 leading-relaxed">
+                Appears on client quotation PDF links, WhatsApp message headers, and customer approval portals.
+              </p>
+            </div>
+
+            {isOwner ? (
+              <div className="flex flex-wrap items-center gap-2 pt-1">
+                <label className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 active:bg-amber-600 text-zinc-950 text-xs font-bold shadow-xs cursor-pointer transition active:scale-98">
+                  <Upload className="h-3.5 w-3.5" />
+                  <span>{logoUrl ? 'Change Logo' : 'Upload Shop Logo'}</span>
+                  <input
+                    type="file"
+                    accept="image/png,image/jpeg,image/webp,image/svg+xml"
+                    onChange={handleLogoUpload}
+                    disabled={uploadingLogo}
+                    className="hidden"
+                  />
+                </label>
+
+                {logoUrl && (
+                  <button
+                    type="button"
+                    onClick={handleRemoveLogo}
+                    disabled={uploadingLogo}
+                    className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-zinc-200 hover:bg-red-100 hover:text-red-700 text-zinc-700 text-xs font-bold transition active:scale-98"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                    <span>Remove Logo</span>
+                  </button>
+                )}
+              </div>
+            ) : (
+              <p className="text-[11px] text-amber-700 font-medium">
+                Only the Workshop Owner can upload or replace the workshop branding logo.
+              </p>
+            )}
+
+            <p className="text-[10px] text-zinc-400">
+              Supported formats: PNG, JPG, WebP, SVG (Max 5MB). Transparent backgrounds look best.
+            </p>
+          </div>
+        </div>
+      </div>
 
       {/* Workshop Details Form */}
       <form onSubmit={handleSaveSettings} className="bg-white rounded-3xl p-5 border border-zinc-200 shadow-xs space-y-4">

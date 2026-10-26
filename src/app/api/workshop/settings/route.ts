@@ -35,6 +35,7 @@ export async function PATCH(req: NextRequest) {
       tax_enabled: body.tax_enabled !== undefined ? Boolean(body.tax_enabled) : undefined,
       tax_rate_percent: body.tax_rate_percent !== undefined ? Number(body.tax_rate_percent) : undefined,
       vat_number: body.vat_number,
+      logo_url: body.logo_url,
     });
 
     return NextResponse.json({ success: true, workshop: updated });

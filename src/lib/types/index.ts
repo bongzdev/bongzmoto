@@ -26,6 +26,7 @@ export interface Workshop {
   receipt_prefix: string;
   next_job_number: number;
   next_receipt_number: number;
+  logo_url?: string | null;
   created_at: string;
   updated_at: string;
 }
