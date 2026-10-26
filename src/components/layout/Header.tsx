@@ -12,9 +12,15 @@ interface HeaderProps {
   };
   workshopName?: string;
   workshopLogo?: string | null;
+  allUsers?: Array<{
+    id: string;
+    full_name: string;
+    role: string;
+    workshop_name?: string;
+  }>;
 }
 
-export function Header({ currentUser, workshopName = 'Bongz Auto', workshopLogo }: HeaderProps) {
+export function Header({ currentUser, workshopName = 'Bongz Auto', workshopLogo, allUsers }: HeaderProps) {
   const [isOffline, setIsOffline] = useState(false);
   const [roleMenuOpen, setRoleMenuOpen] = useState(false);
   const [switching, setSwitching] = useState(false);
@@ -92,12 +98,12 @@ export function Header({ currentUser, workshopName = 'Bongz Auto', workshopLogo 
           </div>
         </Link>
 
-        {/* User Role Switcher */}
+        {/* User / Workshop Switcher */}
         <div className="relative">
           <button
             onClick={() => setRoleMenuOpen(!roleMenuOpen)}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-xs font-medium transition focus:outline-none focus:ring-2 focus:ring-amber-500"
-            title="Switch User Role"
+            title="Switch User / Workshop"
           >
             <span
               className={`h-2 w-2 rounded-full ${
@@ -105,7 +111,7 @@ export function Header({ currentUser, workshopName = 'Bongz Auto', workshopLogo 
               }`}
             />
             <span className="text-zinc-200 truncate max-w-[110px]">
-              {currentUser?.name ? currentUser.name.split(' ')[0] : 'Bongani'}
+              {currentUser?.name ? currentUser.name.split(' ')[0] : 'Owner'}
             </span>
             <span className="text-[10px] text-zinc-400 uppercase">
               ({currentUser?.role || 'owner'})
@@ -114,47 +120,90 @@ export function Header({ currentUser, workshopName = 'Bongz Auto', workshopLogo 
           </button>
 
           {roleMenuOpen && (
-            <div className="absolute right-0 mt-1 w-64 bg-zinc-800 border border-zinc-700 rounded-xl shadow-xl py-1 z-50 text-xs">
-              <div className="px-3 py-2 border-b border-zinc-700">
-                <p className="font-semibold text-zinc-200">Switch Role (Test Permissions)</p>
+            <div className="absolute right-0 mt-1 w-72 bg-zinc-800 border border-zinc-700 rounded-xl shadow-xl py-1 z-50 text-xs divide-y divide-zinc-700/60 max-h-96 overflow-y-auto">
+              <div className="px-3 py-2">
+                <p className="font-semibold text-zinc-200">Switch Workshop / User</p>
                 <p className="text-[11px] text-zinc-400">
-                  Switch between Owner and Mechanic to verify permissions and views.
+                  Select a user profile to switch active workshop context and permissions.
                 </p>
               </div>
 
-              <button
-                onClick={() => handleSwitchUser('usr-bongani-owner')}
-                disabled={switching}
-                className="w-full text-left px-3 py-2.5 hover:bg-zinc-700/60 flex items-center justify-between text-zinc-200 transition"
-              >
-                <div>
-                  <div className="font-medium flex items-center gap-1.5">
-                    <span>Bongani Khumalo</span>
-                    <span className="px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-400 text-[10px] font-bold">
-                      OWNER
-                    </span>
-                  </div>
-                  <p className="text-[10px] text-zinc-400">Full access: settings, finance, staff</p>
-                </div>
-                {isOwner && <Check className="h-4 w-4 text-amber-400" />}
-              </button>
-
-              <button
-                onClick={() => handleSwitchUser('usr-sipho-mechanic')}
-                disabled={switching}
-                className="w-full text-left px-3 py-2.5 hover:bg-zinc-700/60 flex items-center justify-between text-zinc-200 transition"
-              >
-                <div>
-                  <div className="font-medium flex items-center gap-1.5">
-                    <span>Sipho Ndlovu</span>
-                    <span className="px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-400 text-[10px] font-bold">
-                      MECHANIC
-                    </span>
-                  </div>
-                  <p className="text-[10px] text-zinc-400">Assigned jobs, diagnosis, media only</p>
-                </div>
-                {!isOwner && <Check className="h-4 w-4 text-emerald-400" />}
-              </button>
+              <div className="py-1">
+                {allUsers && allUsers.length > 0 ? (
+                  allUsers.map((u) => {
+                    const isCurrent = currentUser?.id === u.id;
+                    const isUserOwner = u.role === 'owner';
+                    return (
+                      <button
+                        key={u.id}
+                        onClick={() => handleSwitchUser(u.id)}
+                        disabled={switching}
+                        className={`w-full text-left px-3 py-2.5 hover:bg-zinc-700/60 flex items-center justify-between text-zinc-200 transition ${
+                          isCurrent ? 'bg-zinc-700/40' : ''
+                        }`}
+                      >
+                        <div className="pr-2">
+                          <div className="font-medium flex items-center gap-1.5">
+                            <span className="truncate max-w-[140px]">{u.full_name}</span>
+                            <span
+                              className={`px-1.5 py-0.2 rounded text-[10px] font-bold ${
+                                isUserOwner
+                                  ? 'bg-amber-500/20 text-amber-400'
+                                  : 'bg-emerald-500/20 text-emerald-400'
+                              }`}
+                            >
+                              {u.role.toUpperCase()}
+                            </span>
+                          </div>
+                          {u.workshop_name && (
+                            <p className="text-[10px] text-amber-300/80 truncate max-w-[180px]">
+                              {u.workshop_name}
+                            </p>
+                          )}
+                        </div>
+                        {isCurrent && (
+                          <Check className="h-4 w-4 text-amber-400 shrink-0" />
+                        )}
+                      </button>
+                    );
+                  })
+                ) : (
+                  <>
+                    <button
+                      onClick={() => handleSwitchUser('usr-bongani-owner')}
+                      disabled={switching}
+                      className="w-full text-left px-3 py-2.5 hover:bg-zinc-700/60 flex items-center justify-between text-zinc-200 transition"
+                    >
+                      <div>
+                        <div className="font-medium flex items-center gap-1.5">
+                          <span>Bongani Khumalo</span>
+                          <span className="px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-400 text-[10px] font-bold">
+                            OWNER
+                          </span>
+                        </div>
+                        <p className="text-[10px] text-zinc-400">Bongz Auto Workshop</p>
+                      </div>
+                      {isOwner && <Check className="h-4 w-4 text-amber-400" />}
+                    </button>
+                    <button
+                      onClick={() => handleSwitchUser('usr-sipho-mechanic')}
+                      disabled={switching}
+                      className="w-full text-left px-3 py-2.5 hover:bg-zinc-700/60 flex items-center justify-between text-zinc-200 transition"
+                    >
+                      <div>
+                        <div className="font-medium flex items-center gap-1.5">
+                          <span>Sipho Ndlovu</span>
+                          <span className="px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-400 text-[10px] font-bold">
+                            MECHANIC
+                          </span>
+                        </div>
+                        <p className="text-[10px] text-zinc-400">Bongz Auto Workshop</p>
+                      </div>
+                      {!isOwner && <Check className="h-4 w-4 text-emerald-400" />}
+                    </button>
+                  </>
+                )}
+              </div>
             </div>
           )}
         </div>

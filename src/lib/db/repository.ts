@@ -112,6 +112,16 @@ export class BongzMotoRepository {
     return res.rows as unknown as User[];
   }
 
+  async listAllUsers(): Promise<(User & { workshop_name?: string })[]> {
+    const res = await this.db.execute({
+      sql: `SELECT u.*, w.name as workshop_name 
+            FROM users u
+            JOIN workshops w ON w.id = u.active_workshop_id
+            ORDER BY w.name ASC, u.role DESC, u.full_name ASC`,
+    });
+    return res.rows as unknown as (User & { workshop_name?: string })[];
+  }
+
   // CUSTOMERS
   async listCustomers(workshopId: string, query?: string): Promise<Customer[]> {
     let sql = `SELECT c.*, 

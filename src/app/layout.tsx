@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import { getCurrentAuth } from '@/lib/auth/session';
+import { repo } from '@/lib/db/repository';
 import { Header } from '@/components/layout/Header';
 import { BottomNav } from '@/components/layout/BottomNav';
 
@@ -18,6 +19,12 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const auth = await getCurrentAuth();
+  let allUsers: any[] = [];
+  try {
+    allUsers = await repo.listAllUsers();
+  } catch (err) {
+    console.error('Failed to load all users for switcher:', err);
+  }
 
   return (
     <html lang="en" className="h-full">
@@ -30,6 +37,7 @@ export default async function RootLayout({
           }}
           workshopName={auth.workshop.name}
           workshopLogo={auth.workshop.logo_url}
+          allUsers={allUsers}
         />
         <main className="flex-1 max-w-4xl w-full mx-auto p-4 sm:p-6 pb-24">
           {children}
