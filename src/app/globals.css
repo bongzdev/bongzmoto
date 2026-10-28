@@ -31,14 +31,21 @@ button, input, select, textarea, a {
   scrollbar-width: none;
 }
 
-/* Print styles for quotations and receipts */
+/* Print styles for quotations, receipts, and invoices */
 @media print {
   body {
     background: #ffffff !important;
     color: #000000 !important;
+    padding: 0 !important;
+    margin: 0 !important;
   }
-  .no-print {
+  header, nav, .no-print {
     display: none !important;
+  }
+  main {
+    max-width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
   }
   .print-only {
     display: block !important;

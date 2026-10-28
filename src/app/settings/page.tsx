@@ -18,6 +18,7 @@ import {
   Image as ImageIcon,
   Trash2,
   Sparkles,
+  CreditCard,
 } from 'lucide-react';
 
 export default function SettingsPage() {
@@ -39,6 +40,13 @@ export default function SettingsPage() {
   const [vatNumber, setVatNumber] = useState('');
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
 
+  // Banking fields
+  const [bankName, setBankName] = useState('');
+  const [accountHolder, setAccountHolder] = useState('');
+  const [accountNumber, setAccountNumber] = useState('');
+  const [branchCode, setBranchCode] = useState('');
+  const [branchName, setBranchName] = useState('');
+
   useEffect(() => {
     fetch('/api/workshop/settings')
       .then((res) => res.json())
@@ -52,6 +60,11 @@ export default function SettingsPage() {
           setTaxRate(data.workshop.tax_rate_percent || 15.0);
           setVatNumber(data.workshop.vat_number || '');
           setLogoUrl(data.workshop.logo_url || null);
+          setBankName(data.workshop.bank_name || '');
+          setAccountHolder(data.workshop.account_holder || '');
+          setAccountNumber(data.workshop.account_number || '');
+          setBranchCode(data.workshop.branch_code || '');
+          setBranchName(data.workshop.branch_name || '');
         }
         if (data.staff) setStaff(data.staff);
         setIsOwner(Boolean(data.isOwner));
@@ -140,6 +153,11 @@ export default function SettingsPage() {
           tax_enabled: taxEnabled,
           tax_rate_percent: taxRate,
           vat_number: vatNumber.trim() || null,
+          bank_name: bankName.trim() || null,
+          account_holder: accountHolder.trim() || null,
+          account_number: accountNumber.trim() || null,
+          branch_code: branchCode.trim() || null,
+          branch_name: branchName.trim() || null,
         }),
       });
 
@@ -397,6 +415,97 @@ export default function SettingsPage() {
               </div>
             </div>
           )}
+        </div>
+
+        {/* Banking & EFT Payment Details */}
+        <div className="pt-3 border-t border-zinc-100 space-y-3">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-xs font-bold text-zinc-900 flex items-center gap-1.5">
+                <CreditCard className="h-4 w-4 text-emerald-600" /> Banking & EFT Payment Details
+              </p>
+              <p className="text-[11px] text-zinc-500">
+                Printed on client invoices with a 1-click account copy button for easy mobile banking transfers
+              </p>
+            </div>
+            <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+              EFT Invoices
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+            <div>
+              <label className="block text-xs font-semibold text-zinc-700 mb-1">
+                Bank Name
+              </label>
+              <input
+                type="text"
+                placeholder="e.g. FNB / First National Bank"
+                disabled={!isOwner}
+                value={bankName}
+                onChange={(e) => setBankName(e.target.value)}
+                className="w-full p-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-xs font-semibold text-zinc-900 focus:outline-none focus:ring-2 focus:ring-amber-500 disabled:opacity-60"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-zinc-700 mb-1">
+                Account Holder Name
+              </label>
+              <input
+                type="text"
+                placeholder="e.g. Shelbez Auto Mechanic"
+                disabled={!isOwner}
+                value={accountHolder}
+                onChange={(e) => setAccountHolder(e.target.value)}
+                className="w-full p-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-xs font-semibold text-zinc-900 focus:outline-none focus:ring-2 focus:ring-amber-500 disabled:opacity-60"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-zinc-700 mb-1">
+                Account Number
+              </label>
+              <input
+                type="text"
+                placeholder="e.g. 62815244843"
+                disabled={!isOwner}
+                value={accountNumber}
+                onChange={(e) => setAccountNumber(e.target.value)}
+                className="w-full p-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-xs font-mono font-semibold text-zinc-900 focus:outline-none focus:ring-2 focus:ring-amber-500 disabled:opacity-60"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <label className="block text-xs font-semibold text-zinc-700 mb-1">
+                  Branch Code
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. 231733"
+                  disabled={!isOwner}
+                  value={branchCode}
+                  onChange={(e) => setBranchCode(e.target.value)}
+                  className="w-full p-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-xs font-mono font-semibold text-zinc-900 focus:outline-none focus:ring-2 focus:ring-amber-500 disabled:opacity-60"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-zinc-700 mb-1">
+                  Branch Name
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. Phuthaditjhaba"
+                  disabled={!isOwner}
+                  value={branchName}
+                  onChange={(e) => setBranchName(e.target.value)}
+                  className="w-full p-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-xs text-zinc-900 focus:outline-none focus:ring-2 focus:ring-amber-500 disabled:opacity-60"
+                />
+              </div>
+            </div>
+          </div>
         </div>
 
         {isOwner && (

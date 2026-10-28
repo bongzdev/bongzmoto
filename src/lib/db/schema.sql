@@ -19,6 +19,11 @@ CREATE TABLE IF NOT EXISTS workshops (
   next_job_number INTEGER DEFAULT 1,
   next_receipt_number INTEGER DEFAULT 1,
   logo_url TEXT,
+  bank_name TEXT,
+  account_holder TEXT,
+  account_number TEXT,
+  branch_code TEXT,
+  branch_name TEXT,
   created_at TEXT DEFAULT (datetime('now')),
   updated_at TEXT DEFAULT (datetime('now'))
 );
@@ -294,3 +299,17 @@ CREATE TABLE IF NOT EXISTS public_quote_tokens (
   FOREIGN KEY (workshop_id) REFERENCES workshops(id) ON DELETE CASCADE
 );
 CREATE INDEX IF NOT EXISTS idx_quote_tokens_token ON public_quote_tokens(token);
+
+CREATE TABLE IF NOT EXISTS public_invoice_tokens (
+  id TEXT PRIMARY KEY,
+  job_id TEXT NOT NULL,
+  workshop_id TEXT NOT NULL,
+  token TEXT UNIQUE NOT NULL,
+  expires_at TEXT NOT NULL,
+  revoked_at TEXT,
+  created_at TEXT DEFAULT (datetime('now')),
+  FOREIGN KEY (job_id) REFERENCES jobs(id) ON DELETE CASCADE,
+  FOREIGN KEY (workshop_id) REFERENCES workshops(id) ON DELETE CASCADE
+);
+CREATE INDEX IF NOT EXISTS idx_invoice_tokens_token ON public_invoice_tokens(token);
+

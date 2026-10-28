@@ -36,6 +36,11 @@ export async function PATCH(req: NextRequest) {
       tax_rate_percent: body.tax_rate_percent !== undefined ? Number(body.tax_rate_percent) : undefined,
       vat_number: body.vat_number,
       logo_url: body.logo_url,
+      bank_name: body.bank_name,
+      account_holder: body.account_holder,
+      account_number: body.account_number,
+      branch_code: body.branch_code,
+      branch_name: body.branch_name,
     });
 
     return NextResponse.json({ success: true, workshop: updated });

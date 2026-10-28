@@ -54,6 +54,11 @@ export class BongzMotoRepository {
       tax_rate_percent?: number;
       vat_number?: string | null;
       logo_url?: string | null;
+      bank_name?: string | null;
+      account_holder?: string | null;
+      account_number?: string | null;
+      branch_code?: string | null;
+      branch_name?: string | null;
     }
   ): Promise<Workshop> {
     const current = await this.getWorkshop(workshopId);
@@ -72,6 +77,11 @@ export class BongzMotoRepository {
               tax_rate_percent = COALESCE(?, tax_rate_percent),
               vat_number = ?,
               logo_url = ?,
+              bank_name = ?,
+              account_holder = ?,
+              account_number = ?,
+              branch_code = ?,
+              branch_name = ?,
               updated_at = datetime('now')
             WHERE id = ?`,
       args: [
@@ -83,6 +93,11 @@ export class BongzMotoRepository {
         data.tax_rate_percent ?? null,
         data.vat_number !== undefined ? data.vat_number : current.vat_number ?? null,
         data.logo_url !== undefined ? data.logo_url : current.logo_url ?? null,
+        data.bank_name !== undefined ? data.bank_name : current.bank_name ?? null,
+        data.account_holder !== undefined ? data.account_holder : current.account_holder ?? null,
+        data.account_number !== undefined ? data.account_number : current.account_number ?? null,
+        data.branch_code !== undefined ? data.branch_code : current.branch_code ?? null,
+        data.branch_name !== undefined ? data.branch_name : current.branch_name ?? null,
         workshopId,
       ],
     });
@@ -1339,6 +1354,68 @@ export class BongzMotoRepository {
         year: job.vehicle_year,
       },
       job_number: job.job_number,
+    };
+  }
+
+  // PUBLIC INVOICE TOKENS
+  async createPublicInvoiceToken(workshopId: string, jobId: string): Promise<string> {
+    const token = randomUUID().replace(/-/g, '') + randomUUID().replace(/-/g, '');
+    const id = randomUUID();
+    // Default 30 days expiration for invoices
+    const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
+
+    await this.db.execute({
+      sql: `INSERT INTO public_invoice_tokens (id, job_id, workshop_id, token, expires_at)
+            VALUES (?, ?, ?, ?, ?)`,
+      args: [id, jobId, workshopId, token, expiresAt],
+    });
+
+    return token;
+  }
+
+  async getPublicInvoiceByToken(token: string): Promise<{
+    job: Job;
+    quote: Quote | null;
+    payments: Payment[];
+    workshop: Workshop;
+    customer: Customer;
+    vehicle: Vehicle;
+  } | null> {
+    const tokenRes = await this.db.execute({
+      sql: `SELECT * FROM public_invoice_tokens 
+            WHERE token = ? AND revoked_at IS NULL AND expires_at > datetime('now')`,
+      args: [token],
+    });
+    if (tokenRes.rows.length === 0) return null;
+
+    const row = tokenRes.rows[0];
+    const jobId = row.job_id as string;
+    const workshopId = row.workshop_id as string;
+
+    const job = await this.getJob(workshopId, jobId);
+    if (!job) return null;
+
+    const workshop = await this.getWorkshop(workshopId);
+    if (!workshop) return null;
+
+    const customer = await this.getCustomer(workshopId, job.customer_id);
+    if (!customer) return null;
+
+    const vehicle = await this.getVehicle(workshopId, job.vehicle_id);
+    if (!vehicle) return null;
+
+    const currentQuote = await this.getCurrentQuote(workshopId, jobId);
+
+    const payments = await this.listJobPayments(workshopId, jobId);
+    const activePayments = payments.filter(p => !p.is_reversed);
+
+    return {
+      job,
+      quote: currentQuote,
+      payments: activePayments,
+      workshop,
+      customer,
+      vehicle,
     };
   }
 

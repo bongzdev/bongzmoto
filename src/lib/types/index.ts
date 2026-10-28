@@ -27,6 +27,11 @@ export interface Workshop {
   next_job_number: number;
   next_receipt_number: number;
   logo_url?: string | null;
+  bank_name?: string | null;
+  account_holder?: string | null;
+  account_number?: string | null;
+  branch_code?: string | null;
+  branch_name?: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -266,6 +271,16 @@ export interface ActivityEvent {
 export interface PublicQuoteToken {
   id: string;
   quote_id: string;
+  job_id: string;
+  workshop_id: string;
+  token: string;
+  expires_at: string;
+  revoked_at?: string | null;
+  created_at: string;
+}
+
+export interface PublicInvoiceToken {
+  id: string;
   job_id: string;
   workshop_id: string;
   token: string;

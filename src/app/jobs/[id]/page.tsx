@@ -428,14 +428,25 @@ export default function JobDetailPage({
           <ArrowLeft className="h-4 w-4" /> All Jobs
         </Link>
 
-        {/* WhatsApp Share trigger */}
-        <button
-          onClick={() => setShowWhatsAppModal(true)}
-          className="flex items-center gap-1.5 px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow transition"
-        >
-          <MessageSquare className="h-3.5 w-3.5" />
-          <span>Share WhatsApp</span>
-        </button>
+        <div className="flex items-center gap-2">
+          {/* Official Invoice Link */}
+          <Link
+            href={`/jobs/${job.id}/invoice`}
+            className="flex items-center gap-1.5 px-3.5 py-2 bg-zinc-900 hover:bg-zinc-800 text-white font-bold text-xs rounded-xl shadow transition active:scale-98"
+          >
+            <FileText className="h-3.5 w-3.5 text-amber-400" />
+            <span>Tax Invoice</span>
+          </Link>
+
+          {/* WhatsApp Share trigger */}
+          <button
+            onClick={() => setShowWhatsAppModal(true)}
+            className="flex items-center gap-1.5 px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow transition"
+          >
+            <MessageSquare className="h-3.5 w-3.5" />
+            <span>Share WhatsApp</span>
+          </button>
+        </div>
       </div>
 
       {/* Main Job Card Header */}
@@ -1131,6 +1142,23 @@ export default function JobDetailPage({
                 </p>
               </div>
             </div>
+          </div>
+
+          {/* Quick Invoice Link Banner */}
+          <div className="flex items-center justify-between p-3.5 bg-amber-500/10 border border-amber-500/30 rounded-2xl text-xs">
+            <div className="flex items-center gap-2">
+              <FileText className="h-4 w-4 text-amber-600 shrink-0" />
+              <div>
+                <p className="font-bold text-zinc-900">Official Tax Invoice & EFT Banking Card</p>
+                <p className="text-[11px] text-zinc-500">Includes 1-click EFT copy button and printable PDF layout</p>
+              </div>
+            </div>
+            <Link
+              href={`/jobs/${job.id}/invoice`}
+              className="px-3.5 py-1.5 bg-zinc-900 hover:bg-zinc-800 text-white font-bold text-xs rounded-xl shadow-xs transition shrink-0"
+            >
+              View Invoice
+            </Link>
           </div>
 
           {/* Record Payment Form */}
